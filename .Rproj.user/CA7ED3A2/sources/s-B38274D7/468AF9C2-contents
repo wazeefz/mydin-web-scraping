@@ -1,0 +1,116 @@
+library(rvest)
+library(RSelenium)
+
+url = "https://mydinexpress.my/hypermart/"
+
+driver = rsDriver(port = as.integer(sample(1000:10000, 1)), browser = "chrome", chromever = "105.0.5195.19")
+
+remDr = driver[["client"]]
+
+remDr$navigate(url)
+
+Sys.sleep(.5)
+
+#Check for "Agree" Button
+click1 = read_html(remDr$getPageSource()[[1]]) %>%
+  html_nodes("a.btn.btn-color-primary.wd-age-verify-allowed") %>% html_text()
+
+if(length(click1)!=0){
+  Sys.sleep(0.5)
+  x_btn = remDr$findElement(using = "css selector",
+                            value = "a.btn.btn-color-primary.wd-age-verify-allowed")
+  x_btn$clickElement()
+}
+
+click2 = read_html(remDr$getPageSource()[[1]]) %>%
+  html_nodes("span.load-more-loading") %>% html_text()
+
+while(length(read_html(remDr$getPageSource()[[1]]) %>%
+             html_nodes("span.load-more-loading") %>% html_text())!=0){
+  
+  
+  Sys.sleep(0.5)
+  x_btn = remDr$findElement(using = "css selector",
+                            value = "span.load-more-loading")
+  x_btn$clickElement()
+}
+
+
+
+# for(i in 1:10){
+# 
+#  #Check for "Load More Products" Button
+#   click2 = read_html(remDr$getPageSource()[[1]]) %>%
+#     html_nodes("span.load-more-loading") %>% html_text()
+# 
+#   if(length(click2)!=0){
+#     Sys.sleep(0.5)
+#     x_btn = remDr$findElement(using = "css selector",
+#                             value = "span.load-more-loading")
+#     x_btn$clickElement()
+#   }else{
+#     break
+#     }
+# }
+
+Sys.sleep(.5)
+
+product_links = read_html(remDr$getPageSource()[[1]]) %>%
+  html_nodes("a.open-quick-view.quick-view-button") %>% html_attr("href") 
+
+cat("PRODUCT LINK = ",product_links,"\n")
+
+length(product_links)
+
+
+
+
+
+prod_details = data.frame()
+
+for(i in 1:length(product_links)){
+  remDr$navigate(product_links[1650])
+  
+  prod_details = data.frame()
+  
+  Sys.sleep(.5)
+  
+  name = read_html(remDr$getPageSource()[[1]]) %>%
+    html_nodes("h1.product_title.entry-title") %>% html_text() 
+  cat("NAME = ",name,"\n")
+  
+  allcategory = read_html(remDr$getPageSource()[[1]]) %>%
+    html_nodes("a.breadcrumb-link  ") %>% html_text()
+  category = allcategory[2]
+  cat("CATEGORY = ",category,"\n")
+  
+  subcategory = allcategory[3]
+  cat("SUBCATEGORY = ",subcategory,"\n")
+  
+  price = read_html(remDr$getPageSource()[[1]]) %>%
+    html_nodes("span.amount") %>% html_text()
+  price = price[length(price)]
+  cat("PRICE = ",price,"\n")
+  
+  sku = read_html(remDr$getPageSource()[[1]]) %>%
+    html_nodes("span.sku_wrapper") %>% html_text()
+  cat("SKU = ",sku,"\n")
+  
+  
+  df = data.frame(Name = name, 
+                  Category = category,
+                  SubCategory = subcategory,
+                  Price = price,
+                  SKU = sku)
+  
+  prod_details = rbind(prod_details, df)
+  
+  
+}
+
+
+
+
+
+
+
