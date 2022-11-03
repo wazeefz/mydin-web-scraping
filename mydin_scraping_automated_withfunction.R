@@ -32,15 +32,24 @@ getprodlink = function(){
   
               clickloadmore = read_html(remDr$getPageSource()[[1]]) %>%
               html_nodes("span.load-more-loading") %>% html_text()
+              
+              k = 1
             
               while(length(read_html(remDr$getPageSource()[[1]]) %>%
                            html_nodes("span.load-more-loading") %>% html_text())!=0){
+
               
-              
-                Sys.sleep(0.5)
+                Sys.sleep(0.8)
+                
                 loadmorebutton = remDr$findElement(using = "css selector",
                                           value = "span.load-more-loading")
                 loadmorebutton$clickElement()
+                
+                
+                cat(k,"\n")
+                k = k + 1
+                
+                
               }
                 
                 
@@ -48,6 +57,8 @@ getprodlink = function(){
                   html_nodes("a.open-quick-view.quick-view-button") %>% html_attr("href") 
               
               cat("Length of product_links =", length(product_links))
+              
+              return(as.data.frame(product_links))
   
   
 
@@ -115,15 +126,17 @@ checkagree()
 
 Sys.sleep(0.5)
 
-x = tryCatch(getprodlink(), error = function(e){e})
+product_links = getprodlink()
 
-while(inherits(x,"error")){
-  x = tryCatch(getprodlink(), error = function(e){e})
-}
+product_links = tryCatch(getprodlink(), error = function(e){e})
+
+# while(inherits(x,"error")){
+#   x = tryCatch(getprodlink(), error = function(e){e})
+# }
 
 Sys.sleep(0.5)
 
-productdetails = getproddetails()
+getproddetails()
 
 nrow(productdetails)
 
